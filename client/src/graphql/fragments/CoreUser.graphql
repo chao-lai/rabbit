@@ -1,0 +1,4 @@
+fragment CoreUser on User {
+  id
+  username
+}
