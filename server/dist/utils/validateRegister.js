@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validateRegister = void 0;
+exports.validatePassword = exports.validateRegister = void 0;
 exports.validateRegister = (options) => {
     const { email, username, password } = options;
     if (!email.includes("@")) {
@@ -27,10 +27,17 @@ exports.validateRegister = (options) => {
             },
         ];
     }
+    const error = exports.validatePassword(password);
+    if (error) {
+        return error;
+    }
+    return null;
+};
+exports.validatePassword = (password) => {
     if (password.length < 6) {
         return [
             {
-                field: "password",
+                field: "newPassword",
                 message: "Password must be at least 6 characters",
             },
         ];

@@ -1,0 +1,8 @@
+fragment CoreUserResponse on UserResponse {
+  errors {
+    ...CoreError
+  }
+  user {
+    ...CoreUser
+  }
+}

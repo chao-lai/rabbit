@@ -2,6 +2,7 @@ import { AuthInput } from "../resolvers/AuthInput";
 
 export const validateRegister = (options: AuthInput) => {
   const { email, username, password } = options;
+
   if (!email.includes("@")) {
     return [
       {
@@ -29,14 +30,22 @@ export const validateRegister = (options: AuthInput) => {
     ];
   }
 
+  const error = validatePassword(password);
+  if (error) {
+    return error;
+  }
+
+  return null;
+};
+
+export const validatePassword = (password: string) => {
   if (password.length < 6) {
     return [
       {
-        field: "password",
+        field: "newPassword",
         message: "Password must be at least 6 characters",
       },
     ];
   }
-
   return null;
 };
