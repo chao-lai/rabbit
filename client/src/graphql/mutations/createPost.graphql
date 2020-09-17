@@ -1,11 +1,5 @@
 mutation CreatePost($input: PostInput!) {
   createPost(input: $input) {
-    updatedAt
-    id
-    title
-    createdAt
-    points
-    text
-    creatorId
+    ...CorePost
   }
 }

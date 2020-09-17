@@ -1,0 +1,9 @@
+fragment CorePost on Post {
+  id
+  title
+  text
+  textSnippet
+  creatorId
+  createdAt
+  updatedAt
+}

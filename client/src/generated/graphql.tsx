@@ -15,7 +15,7 @@ export type Scalars = {
 export type Query = {
   __typename?: 'Query';
   bye: Scalars['String'];
-  posts: Array<Post>;
+  posts: PaginatedPosts;
   post?: Maybe<Post>;
   me?: Maybe<User>;
 };
@@ -29,6 +29,12 @@ export type QueryPostsArgs = {
 
 export type QueryPostArgs = {
   id: Scalars['Float'];
+};
+
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  posts: Array<Post>;
+  hasMore: Scalars['Boolean'];
 };
 
 export type Post = {
@@ -132,6 +138,11 @@ export type CoreErrorFragment = (
   & Pick<FieldError, 'field' | 'message'>
 );
 
+export type CorePostFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'title' | 'text' | 'textSnippet' | 'creatorId' | 'createdAt' | 'updatedAt'>
+);
+
 export type CoreUserFragment = (
   { __typename?: 'User' }
   & Pick<User, 'id' | 'username'>
@@ -171,7 +182,7 @@ export type CreatePostMutation = (
   { __typename?: 'Mutation' }
   & { createPost: (
     { __typename?: 'Post' }
-    & Pick<Post, 'updatedAt' | 'id' | 'title' | 'createdAt' | 'points' | 'text' | 'creatorId'>
+    & CorePostFragment
   ) }
 );
 
@@ -239,12 +250,27 @@ export type PostsQueryVariables = Exact<{
 
 export type PostsQuery = (
   { __typename?: 'Query' }
-  & { posts: Array<(
-    { __typename?: 'Post' }
-    & Pick<Post, 'updatedAt' | 'id' | 'title' | 'textSnippet' | 'createdAt' | 'creatorId'>
-  )> }
+  & { posts: (
+    { __typename?: 'PaginatedPosts' }
+    & Pick<PaginatedPosts, 'hasMore'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & CorePostFragment
+    )> }
+  ) }
 );
 
+export const CorePostFragmentDoc = gql`
+    fragment CorePost on Post {
+  id
+  title
+  text
+  textSnippet
+  creatorId
+  createdAt
+  updatedAt
+}
+    `;
 export const CoreErrorFragmentDoc = gql`
     fragment CoreError on FieldError {
   field
@@ -282,16 +308,10 @@ export function useChangePasswordMutation() {
 export const CreatePostDocument = gql`
     mutation CreatePost($input: PostInput!) {
   createPost(input: $input) {
-    updatedAt
-    id
-    title
-    createdAt
-    points
-    text
-    creatorId
+    ...CorePost
   }
 }
-    `;
+    ${CorePostFragmentDoc}`;
 
 export function useCreatePostMutation() {
   return Urql.useMutation<CreatePostMutation, CreatePostMutationVariables>(CreatePostDocument);
@@ -351,15 +371,13 @@ export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'q
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(cursor: $cursor, limit: $limit) {
-    updatedAt
-    id
-    title
-    textSnippet
-    createdAt
-    creatorId
+    hasMore
+    posts {
+      ...CorePost
+    }
   }
 }
-    `;
+    ${CorePostFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });

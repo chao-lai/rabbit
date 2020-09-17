@@ -10,6 +10,7 @@ import {
   UseMiddleware,
   FieldResolver,
   Root,
+  ObjectType,
 } from "type-graphql";
 import { getConnection } from "typeorm";
 
@@ -25,6 +26,14 @@ class PostInput {
   text: string;
 }
 
+@ObjectType()
+class PaginatedPosts {
+  @Field(() => [Post])
+  posts: Post[];
+  @Field()
+  hasMore: boolean;
+}
+
 @Resolver(Post)
 export class PostResolver {
   @FieldResolver(() => String)
@@ -32,17 +41,17 @@ export class PostResolver {
     return post.text.slice(0, 49);
   }
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null
-  ): Promise<Post[]> {
+  ): Promise<PaginatedPosts> {
     const hardLimit = Math.min(25, limit);
     const qb = getConnection()
       .getRepository(Post)
       .createQueryBuilder("p")
       .orderBy('"createdAt"', "DESC")
-      .take(hardLimit);
+      .take(hardLimit + 1);
 
     if (cursor) {
       qb.where('"createdAt" < :cursor', {
@@ -50,7 +59,12 @@ export class PostResolver {
       });
     }
 
-    return qb.getMany();
+    const posts = await qb.getMany();
+
+    return {
+      posts: posts.slice(0, hardLimit),
+      hasMore: posts.length === hardLimit + 1,
+    };
   }
 
   @Query(() => Post, { nullable: true })
