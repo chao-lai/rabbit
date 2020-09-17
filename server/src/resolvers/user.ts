@@ -1,13 +1,21 @@
-import argon2 from 'argon2';
-import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from 'type-graphql';
-import { v4 } from 'uuid';
+import argon2 from "argon2";
+import {
+  Arg,
+  Ctx,
+  Field,
+  Mutation,
+  ObjectType,
+  Query,
+  Resolver,
+} from "type-graphql";
+import { v4 } from "uuid";
 
-import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from '../constants';
-import { User } from '../entities/User';
-import { MyContext } from '../types';
-import { sendEmail } from '../utils/sendEmail';
-import { validatePassword, validateRegister } from '../utils/validateRegister';
-import { AuthInput } from './AuthInput';
+import { COOKIE_NAME, FORGET_PASSWORD_PREFIX } from "../constants";
+import { User } from "../entities/User";
+import { MyContext } from "../types";
+import { sendEmail } from "../utils/sendEmail";
+import { validatePassword, validateRegister } from "../utils/validateRegister";
+import { AuthInput } from "./AuthInput";
 
 @ObjectType()
 class FieldError {
@@ -51,7 +59,11 @@ export class UserResolver {
     const hashedPassword = await argon2.hash(password);
     let user;
     try {
-      user = await User.create({username, email, password: hashedPassword}).save()
+      user = await User.create({
+        username,
+        email,
+        password: hashedPassword,
+      }).save();
       req.session.userId = user.id;
     } catch (error) {
       if (error.code === "23505") {
@@ -69,7 +81,7 @@ export class UserResolver {
         };
       }
     }
-    
+
     return { user };
   }
 
@@ -131,7 +143,7 @@ export class UserResolver {
     @Arg("email") email: string,
     @Ctx() { redis }: MyContext
   ) {
-    const user = await User.findOne({ where: email });
+    const user = await User.findOne({ where: { email } });
     if (!user) {
       return false;
     }
@@ -199,7 +211,7 @@ export class UserResolver {
   @Mutation(() => Boolean)
   async resetUserDB(@Ctx() {}: MyContext) {
     try {
-      await User.delete({})
+      await User.delete({});
       return true;
     } catch (error) {
       console.error(error);

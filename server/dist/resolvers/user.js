@@ -78,7 +78,11 @@ let UserResolver = class UserResolver {
             const hashedPassword = yield argon2_1.default.hash(password);
             let user;
             try {
-                user = yield User_1.User.create({ username, email, password: hashedPassword }).save();
+                user = yield User_1.User.create({
+                    username,
+                    email,
+                    password: hashedPassword,
+                }).save();
                 req.session.userId = user.id;
             }
             catch (error) {
@@ -145,7 +149,7 @@ let UserResolver = class UserResolver {
     }
     forgotPassword(email, { redis }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.User.findOne({ where: email });
+            const user = yield User_1.User.findOne({ where: { email } });
             if (!user) {
                 return false;
             }
