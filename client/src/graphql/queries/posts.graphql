@@ -3,7 +3,7 @@ query Posts($limit: Int!, $cursor: String) {
     updatedAt
     id
     title
-    text
+    textSnippet
     createdAt
     creatorId
   }
