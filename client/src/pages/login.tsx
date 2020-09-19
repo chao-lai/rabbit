@@ -28,7 +28,6 @@ const Login: FC<loginProps> = ({}) => {
           if (res.data?.login.errors) {
             setErrors(toErrorMap(res.data.login.errors));
           } else if (res.data?.login.user) {
-            console.log(router.query);
             if (typeof router.query.next === "string") {
               router.push(router.query.next);
             } else {

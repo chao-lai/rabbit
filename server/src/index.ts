@@ -1,40 +1,41 @@
-import 'reflect-metadata';
+import "reflect-metadata";
 
-import { ApolloServer } from 'apollo-server-express';
-import connectRedis from 'connect-redis';
-import cors from 'cors';
-import express from 'express';
-import session from 'express-session';
-import Redis from 'ioredis';
-import { buildSchema } from 'type-graphql';
+import { ApolloServer } from "apollo-server-express";
+import connectRedis from "connect-redis";
+import cors from "cors";
+import express from "express";
+import session from "express-session";
+import Redis from "ioredis";
+import path from "path";
+import { buildSchema } from "type-graphql";
+import { createConnection } from "typeorm";
 
-import { __prod__, COOKIE_NAME } from './constants';
-import { ByeResolver } from './resolvers/bye';
-import { PostResolver } from './resolvers/post';
-import { UserResolver } from './resolvers/user';
-import { createConnection } from 'typeorm'
-import { Post } from './entities/Post';
-import { User } from './entities/User';
-import path from 'path';
+import { __prod__, COOKIE_NAME } from "./constants";
+import { Post } from "./entities/Post";
+import { Updoot } from "./entities/Updoot";
+import { User } from "./entities/User";
+import { ByeResolver } from "./resolvers/bye";
+import { PostResolver } from "./resolvers/post";
+import { UserResolver } from "./resolvers/user";
 
 const main = async () => {
   const connection = await createConnection({
-    type: 'postgres',
-    database: 'rabbit2',
-    username: 'postgres',
-    password: 'wooden',
+    type: "postgres",
+    database: "rabbit2",
+    username: "postgres",
+    password: "wooden",
     logging: true,
     synchronize: true,
-    migrations: [path.join(__dirname, './migrations/*')],
-    entities: [Post, User],
+    migrations: [path.join(__dirname, "./migrations/*")],
+    entities: [Post, User, Updoot],
   });
-  await connection.runMigrations()
+  await connection.runMigrations();
   // await Post.delete({})
 
   const app = express();
 
   let RedisStore = connectRedis(session);
-  const redis = new Redis()
+  const redis = new Redis();
 
   app.use(
     cors({

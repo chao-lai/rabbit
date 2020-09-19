@@ -2,8 +2,12 @@ fragment CorePost on Post {
   id
   title
   text
+  points
   textSnippet
-  creatorId
+  creator {
+    id
+    username
+  }
   createdAt
   updatedAt
 }

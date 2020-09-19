@@ -7,6 +7,8 @@ import {
   ObjectType,
   Query,
   Resolver,
+  Root,
+  FieldResolver,
 } from "type-graphql";
 import { v4 } from "uuid";
 
@@ -34,7 +36,7 @@ class UserResponse {
   user?: User;
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext) {
@@ -42,6 +44,14 @@ export class UserResolver {
       return null;
     }
     return User.findOne(req.session.userId);
+  }
+
+  @FieldResolver(() => String)
+  email(@Root() user: User, @Ctx() { req }: MyContext) {
+    if (req.session.userId === user.id) {
+      return user.email;
+    }
+    return "";
   }
 
   @Mutation(() => UserResponse)

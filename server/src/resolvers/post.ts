@@ -2,19 +2,20 @@ import {
   Arg,
   Ctx,
   Field,
+  FieldResolver,
   InputType,
   Int,
   Mutation,
+  ObjectType,
   Query,
   Resolver,
-  UseMiddleware,
-  FieldResolver,
   Root,
-  ObjectType,
+  UseMiddleware,
 } from "type-graphql";
 import { getConnection } from "typeorm";
 
 import { Post } from "../entities/Post";
+import { Updoot } from "../entities/Updoot";
 import { isAuth } from "../middleware/isAuth";
 import { MyContext } from "../types";
 
@@ -41,25 +42,106 @@ export class PostResolver {
     return post.text.slice(0, 49);
   }
 
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async vote(
+    @Arg("postId", () => Int) postId: number,
+    @Arg("value", () => Int) value: number,
+    @Ctx() { req }: MyContext
+  ) {
+    const realValue = value > 0 ? 1 : -1;
+    const { userId } = req.session;
+
+    const updoot = await Updoot.findOne({ where: { postId, userId } });
+
+    if (updoot && updoot.value !== realValue) {
+      await getConnection().transaction(async (tx) => {
+        await tx.query(
+          `
+          update updoot
+          set value = $1
+          where "postId" = $2 and "userId" = $3
+          `,
+          [realValue, postId, userId]
+        );
+
+        await tx.query(
+          `
+          update post
+          set points = points + $1
+          where id = $2
+          `,
+          [realValue * 2, postId]
+        );
+      });
+    } else if (!updoot) {
+      await getConnection().transaction(async (tx) => {
+        await tx.query(
+          `
+          insert into updoot ("userId", "postId", value)
+          values ($1, $2, $3)
+          `,
+          [userId, postId, realValue]
+        );
+        await tx.query(
+          `
+          update post
+          set points = points + $1
+          where id = $2
+          `,
+          [realValue, postId]
+        );
+      });
+    }
+
+    return true;
+  }
+
   @Query(() => PaginatedPosts)
   async posts(
     @Arg("limit", () => Int) limit: number,
     @Arg("cursor", () => String, { nullable: true }) cursor: string | null
   ): Promise<PaginatedPosts> {
     const hardLimit = Math.min(25, limit);
-    const qb = getConnection()
-      .getRepository(Post)
-      .createQueryBuilder("p")
-      .orderBy('"createdAt"', "DESC")
-      .take(hardLimit + 1);
+
+    const replacements: any[] = [hardLimit];
 
     if (cursor) {
-      qb.where('"createdAt" < :cursor', {
-        cursor: new Date(parseInt(cursor)),
-      });
+      replacements.push(new Date(parseInt(cursor)));
     }
 
-    const posts = await qb.getMany();
+    const posts = await getConnection().query(
+      `
+    select p.*,
+    json_build_object(
+      'id', u.id,
+      'username', u.username,
+      'email', u.email,
+      'createdAt', u."createdAt",
+      'updatedAt', u."updatedAt"
+      ) creator
+    from post p
+    inner join public.user u on u.id = p."creatorId"
+    ${cursor ? `where p."createdAt" < $2` : ""}
+    order by p."createdAt" DESC
+    limit $1 + 1
+    `,
+      replacements
+    );
+
+    // const qb = getConnection()
+    //   .getRepository(Post)
+    //   .createQueryBuilder("p")
+    //   .orderBy('"createdAt"', "DESC")
+    //   .take(hardLimit + 1);
+
+    // if (cursor) {
+    //   qb.where('"createdAt" < :cursor', {
+    //     cursor: new Date(parseInt(cursor)),
+    //   });
+    // }
+
+    // const posts = await qb.getMany();
 
     return {
       posts: posts.slice(0, hardLimit),

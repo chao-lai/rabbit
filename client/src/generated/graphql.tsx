@@ -44,6 +44,7 @@ export type Post = {
   text: Scalars['String'];
   points: Scalars['Float'];
   creatorId: Scalars['Float'];
+  creator: User;
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
   textSnippet: Scalars['String'];
@@ -60,6 +61,7 @@ export type User = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  vote: Scalars['Boolean'];
   createPost: Post;
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
@@ -70,6 +72,12 @@ export type Mutation = {
   forgotPassword: Scalars['Boolean'];
   changePassword: UserResponse;
   resetUserDB: Scalars['Boolean'];
+};
+
+
+export type MutationVoteArgs = {
+  value: Scalars['Int'];
+  postId: Scalars['Int'];
 };
 
 
@@ -140,7 +148,11 @@ export type CoreErrorFragment = (
 
 export type CorePostFragment = (
   { __typename?: 'Post' }
-  & Pick<Post, 'id' | 'title' | 'text' | 'textSnippet' | 'creatorId' | 'createdAt' | 'updatedAt'>
+  & Pick<Post, 'id' | 'title' | 'text' | 'points' | 'textSnippet' | 'createdAt' | 'updatedAt'>
+  & { creator: (
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'username'>
+  ) }
 );
 
 export type CoreUserFragment = (
@@ -231,6 +243,17 @@ export type RegisterMutation = (
   ) }
 );
 
+export type VoteMutationVariables = Exact<{
+  value: Scalars['Int'];
+  postId: Scalars['Int'];
+}>;
+
+
+export type VoteMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'vote'>
+);
+
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -265,8 +288,12 @@ export const CorePostFragmentDoc = gql`
   id
   title
   text
+  points
   textSnippet
-  creatorId
+  creator {
+    id
+    username
+  }
   createdAt
   updatedAt
 }
@@ -355,6 +382,15 @@ export const RegisterDocument = gql`
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
+};
+export const VoteDocument = gql`
+    mutation Vote($value: Int!, $postId: Int!) {
+  vote(value: $value, postId: $postId)
+}
+    `;
+
+export function useVoteMutation() {
+  return Urql.useMutation<VoteMutation, VoteMutationVariables>(VoteDocument);
 };
 export const MeDocument = gql`
     query Me {

@@ -19,25 +19,26 @@ const cors_1 = __importDefault(require("cors"));
 const express_1 = __importDefault(require("express"));
 const express_session_1 = __importDefault(require("express-session"));
 const ioredis_1 = __importDefault(require("ioredis"));
+const path_1 = __importDefault(require("path"));
 const type_graphql_1 = require("type-graphql");
+const typeorm_1 = require("typeorm");
 const constants_1 = require("./constants");
+const Post_1 = require("./entities/Post");
+const Updoot_1 = require("./entities/Updoot");
+const User_1 = require("./entities/User");
 const bye_1 = require("./resolvers/bye");
 const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
-const typeorm_1 = require("typeorm");
-const Post_1 = require("./entities/Post");
-const User_1 = require("./entities/User");
-const path_1 = __importDefault(require("path"));
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield typeorm_1.createConnection({
-        type: 'postgres',
-        database: 'rabbit2',
-        username: 'postgres',
-        password: 'wooden',
+        type: "postgres",
+        database: "rabbit2",
+        username: "postgres",
+        password: "wooden",
         logging: true,
         synchronize: true,
-        migrations: [path_1.default.join(__dirname, './migrations/*')],
-        entities: [Post_1.Post, User_1.User],
+        migrations: [path_1.default.join(__dirname, "./migrations/*")],
+        entities: [Post_1.Post, User_1.User, Updoot_1.Updoot],
     });
     yield connection.runMigrations();
     const app = express_1.default();
