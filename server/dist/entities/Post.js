@@ -12,8 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Post = void 0;
 const type_graphql_1 = require("type-graphql");
 const typeorm_1 = require("typeorm");
-const User_1 = require("./User");
 const Updoot_1 = require("./Updoot");
+const User_1 = require("./User");
 let Post = class Post extends typeorm_1.BaseEntity {
 };
 __decorate([
@@ -36,6 +36,10 @@ __decorate([
     typeorm_1.Column({ type: "int", default: 0 }),
     __metadata("design:type", Number)
 ], Post.prototype, "points", void 0);
+__decorate([
+    type_graphql_1.Field(() => type_graphql_1.Int, { defaultValue: 0 }),
+    __metadata("design:type", Number)
+], Post.prototype, "voteStatus", void 0);
 __decorate([
     type_graphql_1.Field(),
     typeorm_1.Column(),

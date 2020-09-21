@@ -4,6 +4,7 @@ fragment CorePost on Post {
   text
   points
   textSnippet
+  voteStatus
   creator {
     id
     username
