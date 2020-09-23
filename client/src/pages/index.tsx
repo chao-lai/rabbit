@@ -1,21 +1,13 @@
-import {
-  Box,
-  Button,
-  Flex,
-  Heading,
-  IconButton,
-  Link,
-  Stack,
-  Text,
-} from "@chakra-ui/core";
-import { withUrqlClient } from "next-urql";
-import NextLink from "next/link";
-import { useState } from "react";
+import { Box, Button, Flex, Heading, Link, Stack, Text } from '@chakra-ui/core';
+import { withUrqlClient } from 'next-urql';
+import NextLink from 'next/link';
+import React, { useState } from 'react';
 
-import { Layout } from "../components/Layout";
-import { UpdootSection } from "../components/UpdootSection";
-import { useDeletePostMutation, usePostsQuery } from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
+import { EditDeletePostButtons } from '../components/EditDeletePostButtons';
+import { Layout } from '../components/Layout';
+import { UpdootSection } from '../components/UpdootSection';
+import { usePostsQuery } from '../generated/graphql';
+import { createUrqlClient } from '../utils/createUrqlClient';
 
 type cursorType = null | string;
 
@@ -28,7 +20,6 @@ const Index = () => {
   const [{ data, fetching }] = usePostsQuery({
     variables,
   });
-  const [, deletePost] = useDeletePostMutation();
 
   return (
     <Layout>
@@ -47,17 +38,13 @@ const Index = () => {
                     </Link>
                   </NextLink>
                   <Text>posted by {post.creator.username}</Text>
-                  <Flex align="center">
+                  <Flex>
                     <Text mt={4} flex={1}>
                       {post.textSnippet + (post.text.length > 49 ? "..." : "")}
                     </Text>
-                    <IconButton
-                      ml="auto"
-                      variantColor="red"
-                      icon="delete"
-                      aria-label="Delete Post"
-                      onClick={() => deletePost({ id: post.id })}
-                    />
+                    <Box>
+                      <EditDeletePostButtons postId={post.id} creatorId={post.creator.id} />
+                    </Box>
                   </Flex>
                 </Box>
               </Flex>

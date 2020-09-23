@@ -138,16 +138,20 @@ let PostResolver = class PostResolver {
             return yield Post_1.Post.create(Object.assign(Object.assign({}, input), { creatorId: req.session.userId })).save();
         });
     }
-    updatePost(id, title) {
+    updatePost(id, input, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = yield Post_1.Post.findOne(id);
-            if (!post) {
-                return undefined;
-            }
-            if (typeof title !== "undefined") {
-                yield Post_1.Post.update({ id }, { title });
-            }
-            return post;
+            const { title, text } = input;
+            const res = yield typeorm_1.getConnection()
+                .createQueryBuilder()
+                .update(Post_1.Post)
+                .set({ title, text })
+                .where('id = :id and "creatorId" = :creatorId', {
+                id,
+                creatorId: req.session.userId,
+            })
+                .returning("*")
+                .execute();
+            return res.raw[0];
         });
     }
     deletePost(id, { req }) {
@@ -207,10 +211,12 @@ __decorate([
 ], PostResolver.prototype, "createPost", null);
 __decorate([
     type_graphql_1.Mutation(() => Post_1.Post, { nullable: true }),
-    __param(0, type_graphql_1.Arg("id")),
-    __param(1, type_graphql_1.Arg("title", () => String, { nullable: true })),
+    type_graphql_1.UseMiddleware(isAuth_1.isAuth),
+    __param(0, type_graphql_1.Arg("id", () => type_graphql_1.Int)),
+    __param(1, type_graphql_1.Arg("input")),
+    __param(2, type_graphql_1.Ctx()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, String]),
+    __metadata("design:paramtypes", [Number, PostInput, Object]),
     __metadata("design:returntype", Promise)
 ], PostResolver.prototype, "updatePost", null);
 __decorate([

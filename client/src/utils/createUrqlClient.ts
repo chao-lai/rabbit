@@ -1,6 +1,4 @@
 import { cacheExchange, Resolver } from "@urql/exchange-graphcache";
-import gql from "graphql-tag";
-import Router from "next/router";
 import {
   dedupExchange,
   Exchange,
@@ -8,17 +6,18 @@ import {
   stringifyVariables,
 } from "urql";
 import { pipe, tap } from "wonka";
-
 import {
-  DeletePostMutationVariables,
   LoginMutation,
   LogoutMutation,
   MeDocument,
   MeQuery,
   RegisterMutation,
   VoteMutationVariables,
+  DeletePostMutationVariables,
 } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
+import Router from "next/router";
+import gql from "graphql-tag";
 import { isServer } from "./isServer";
 
 const errorExchange: Exchange = ({ forward }) => (ops$) => {
@@ -71,14 +70,18 @@ const cursorPagination = (): Resolver => {
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = "";
   if (isServer()) {
-    cookie = ctx.req.headers.cookie;
+    cookie = ctx?.req?.headers?.cookie;
   }
 
   return {
     url: "http://localhost:4000/graphql",
     fetchOptions: {
       credentials: "include" as const,
-      headers: cookie ? { cookie } : undefined,
+      headers: cookie
+        ? {
+            cookie,
+          }
+        : undefined,
     },
     exchanges: [
       dedupExchange,
@@ -134,8 +137,8 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
               const fieldInfos = allFields.filter(
                 (info) => info.fieldName === "posts"
               );
-              fieldInfos.forEach((field) => {
-                cache.invalidate("Query", "posts", field.arguments || {});
+              fieldInfos.forEach((fi) => {
+                cache.invalidate("Query", "posts", fi.arguments || {});
               });
             },
             logout: (_result, _args, cache, _info) => {
