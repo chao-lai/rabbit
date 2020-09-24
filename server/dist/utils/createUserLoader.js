@@ -17,6 +17,10 @@ const dataloader_1 = __importDefault(require("dataloader"));
 const User_1 = require("../entities/User");
 exports.createUserLoader = () => new dataloader_1.default((userIds) => __awaiter(void 0, void 0, void 0, function* () {
     const users = yield User_1.User.findByIds(userIds);
-    return users;
+    const userMap = {};
+    users.forEach((u) => {
+        userMap[u.id] = u;
+    });
+    return userIds.map((userId) => userMap[userId]);
 }));
 //# sourceMappingURL=createUserLoader.js.map

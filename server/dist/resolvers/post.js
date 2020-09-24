@@ -77,34 +77,36 @@ let PostResolver = class PostResolver {
     }
     vote(postId, value, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const realValue = value >= 1 ? 1 : value <= -1 ? -1 : 0;
             const { userId } = req.session;
             const updoot = yield Updoot_1.Updoot.findOne({ where: { postId, userId } });
-            if (updoot && updoot.value !== realValue) {
+            if (value === 0 || (updoot === null || updoot === void 0 ? void 0 : updoot.value) === value) {
+                return false;
+            }
+            if (updoot) {
                 yield typeorm_1.getConnection().transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                     yield tx.query(`
           update updoot
-          set value = $1
+          set value = value + $1
           where "postId" = $2 and "userId" = $3
-          `, [realValue, postId, userId]);
+          `, [value, postId, userId]);
                     yield tx.query(`
           update post
           set points = points + $1
           where id = $2
-          `, [realValue * 2, postId]);
+          `, [value, postId]);
                 }));
             }
-            else if (!updoot) {
+            else {
                 yield typeorm_1.getConnection().transaction((tx) => __awaiter(this, void 0, void 0, function* () {
                     yield tx.query(`
           insert into updoot ("userId", "postId", value)
           values ($1, $2, $3)
-          `, [userId, postId, realValue]);
+          `, [userId, postId, value]);
                     yield tx.query(`
           update post
           set points = points + $1
           where id = $2
-          `, [realValue, postId]);
+          `, [value, postId]);
                 }));
             }
             return true;

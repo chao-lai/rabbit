@@ -70,20 +70,22 @@ export class PostResolver {
     @Arg("value", () => Int) value: number,
     @Ctx() { req }: MyContext
   ) {
-    const realValue = value >= 1 ? 1 : value <= -1 ? -1 : 0;
     const { userId } = req.session;
-
     const updoot = await Updoot.findOne({ where: { postId, userId } });
 
-    if (updoot && updoot.value !== realValue) {
+    if (value === 0 || updoot?.value === value) {
+      return false;
+    }
+
+    if (updoot) {
       await getConnection().transaction(async (tx) => {
         await tx.query(
           `
           update updoot
-          set value = $1
+          set value = value + $1
           where "postId" = $2 and "userId" = $3
           `,
-          [realValue, postId, userId]
+          [value, postId, userId]
         );
 
         await tx.query(
@@ -92,17 +94,17 @@ export class PostResolver {
           set points = points + $1
           where id = $2
           `,
-          [realValue * 2, postId]
+          [value, postId]
         );
       });
-    } else if (!updoot) {
+    } else {
       await getConnection().transaction(async (tx) => {
         await tx.query(
           `
           insert into updoot ("userId", "postId", value)
           values ($1, $2, $3)
           `,
-          [userId, postId, realValue]
+          [userId, postId, value]
         );
         await tx.query(
           `
@@ -110,7 +112,7 @@ export class PostResolver {
           set points = points + $1
           where id = $2
           `,
-          [realValue, postId]
+          [value, postId]
         );
       });
     }
