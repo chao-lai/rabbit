@@ -8,7 +8,7 @@ import InputField from "../../../components/InputField";
 import { Layout } from "../../../components/Layout";
 import { useUpdatePostMutation } from "../../../generated/graphql";
 import { createUrqlClient } from "../../../utils/createUrqlClient";
-import { getIdFromQuery } from "../../../utils/getIDfromQuery";
+import { getIdFromQuery } from "../../../utils/getIdFromQuery";
 import { getPostFromURL } from "../../../utils/getPostFromURL";
 
 const EditPost = () => {

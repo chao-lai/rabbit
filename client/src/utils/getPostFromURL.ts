@@ -1,5 +1,5 @@
 import { usePostQuery } from "../generated/graphql";
-import { getIdFromQuery } from "./getIDfromQuery";
+import { getIdFromQuery } from "./getIdFromQuery";
 
 export const getPostFromURL = () => {
   const postId = getIdFromQuery();

@@ -1,6 +1,6 @@
+import "dotenv-safe/config";
 import "reflect-metadata";
 
-import 'dotenv-safe/config';
 import { ApolloServer } from "apollo-server-express";
 import connectRedis from "connect-redis";
 import cors from "cors";
@@ -38,6 +38,7 @@ const main = async () => {
   let RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
 
+  app.set("trust proxy", 1);
   app.use(
     cors({
       origin: process.env.CORS_ORIGIN,
@@ -54,7 +55,7 @@ const main = async () => {
         httpOnly: true,
         sameSite: "lax", //csrf
         secure: __prod__,
-        // domain: __prod__ ? ".codeponder.com" : undefined,
+        domain: __prod__ ? ".aged.monster" : undefined,
       },
       saveUninitialized: false,
       secret: process.env.SESSION_SECRET,
