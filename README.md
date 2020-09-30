@@ -1,6 +1,5 @@
+[LIVE SITE](https://aged.monster/)
 [![dummy photo](https://i.imgur.com/hYy8Y6b.png)](https://aged.monster/)
-
-[TRY ME](https://aged.monster/)
 
 # Overview
 
@@ -10,7 +9,7 @@ Rabbit is a fullstack web application, written in TypeScript, with simple featur
 
 ### Client
 
-The frontend client is powered by React in Next.js and Chakra UI. Apollo is used to make queries and interact with the GraphQL server.
+The frontend client is powered by React in Next.js and Chakra UI. Apollo is used to make queries, interact with the GraphQL server, and to paginate the posts.
 
 1. cd to the client directory, run yarn 
 2. run yarn dev
@@ -26,5 +25,5 @@ The backend server is built using PostgreSQL, Node.js, and GraphQL. Redis is use
 - REDIS_URL=127.0.0.1:6379
 - PORT=[server port number]
 - SESSION_SECRET=[secret of your choice]
-- CORS_ORIGIN=[localhost link of your client]
+- CORS_ORIGIN=http://localhost:3000/
 4. run yarn -> run yarn watch -> run yarn dev in a separate terminal window
