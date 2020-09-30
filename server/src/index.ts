@@ -30,7 +30,7 @@ const main = async () => {
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [Post, User, Updoot],
   });
-  // await connection.runMigrations();
+  await connection.runMigrations();
   // await Post.delete({})
 
   const app = express();
