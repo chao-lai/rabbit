@@ -73,10 +73,6 @@ export class PostResolver {
     const { userId } = req.session;
     const updoot = await Updoot.findOne({ where: { postId, userId } });
 
-    if (value === 0 || updoot?.value === value) {
-      return false;
-    }
-
     if (updoot) {
       await getConnection().transaction(async (tx) => {
         await tx.query(

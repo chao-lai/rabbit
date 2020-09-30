@@ -4,7 +4,7 @@ import { getIdFromQuery } from "./getIdFromQuery";
 export const getPostFromURL = () => {
   const postId = getIdFromQuery();
   return usePostQuery({
-    pause: postId === -1,
+    skip: postId === -1,
     variables: {
       id: postId,
     },

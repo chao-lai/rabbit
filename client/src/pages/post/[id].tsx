@@ -1,16 +1,15 @@
 import { Box, Heading } from "@chakra-ui/core";
-import { withUrqlClient } from "next-urql";
 import React from "react";
-import { EditDeletePostButtons } from "../../components/EditDeletePostButtons";
 
+import { EditDeletePostButtons } from "../../components/EditDeletePostButtons";
 import { Layout } from "../../components/Layout";
-import { createUrqlClient } from "../../utils/createUrqlClient";
 import { getPostFromURL } from "../../utils/getPostFromURL";
+import { withApollo } from "../../utils/withApollo";
 
 const Post = ({}) => {
-  const [{ data, fetching, error }] = getPostFromURL();
+  const { data, loading, error } = getPostFromURL();
 
-  if (fetching) {
+  if (loading) {
     return (
       <Layout>
         <div>Loading...</div>
@@ -34,18 +33,15 @@ const Post = ({}) => {
     );
   }
 
-  const {title, text, id, creator} = data.post
+  const { title, text, id, creator } = data.post;
 
   return (
     <Layout>
       <Heading mb={4}>{title}</Heading>
       <Box mb={4}>{text}</Box>
-      <EditDeletePostButtons
-        postId={id}
-        creatorId={creator.id}
-      />
+      <EditDeletePostButtons postId={id} creatorId={creator.id} />
     </Layout>
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Post);
+export default withApollo({ ssr: true })(Post);

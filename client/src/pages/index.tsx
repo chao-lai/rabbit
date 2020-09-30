@@ -1,29 +1,34 @@
-import { Box, Button, Flex, Heading, Link, Stack, Text } from '@chakra-ui/core';
-import { withUrqlClient } from 'next-urql';
-import NextLink from 'next/link';
-import React, { useState } from 'react';
+import { Box, Button, Flex, Heading, Link, Stack, Text } from "@chakra-ui/core";
+import NextLink from "next/link";
+import React from "react";
 
-import { EditDeletePostButtons } from '../components/EditDeletePostButtons';
-import { Layout } from '../components/Layout';
-import { UpdootSection } from '../components/UpdootSection';
-import { usePostsQuery } from '../generated/graphql';
-import { createUrqlClient } from '../utils/createUrqlClient';
-
-type cursorType = null | string;
+import { EditDeletePostButtons } from "../components/EditDeletePostButtons";
+import { Layout } from "../components/Layout";
+import { UpdootSection } from "../components/UpdootSection";
+import { usePostsQuery } from "../generated/graphql";
+import { withApollo } from "../utils/withApollo";
 
 const Index = () => {
-  const [variables, setVariables] = useState({
-    limit: 10,
-    cursor: null as cursorType,
+  const { data, error, loading, fetchMore, variables } = usePostsQuery({
+    variables: {
+      limit: 10,
+      cursor: null,
+    },
+    notifyOnNetworkStatusChange: true,
   });
 
-  const [{ data, fetching }] = usePostsQuery({
-    variables,
-  });
+  if (!loading && !data) {
+    return (
+      <>
+        <div>query failed for unknown reason</div>
+        <div>{error?.message}</div>
+      </>
+    );
+  }
 
   return (
     <Layout>
-      {!data && fetching ? (
+      {!data && loading ? (
         <h2>Loading...</h2>
       ) : (
         <Stack spacing={8}>
@@ -43,7 +48,10 @@ const Index = () => {
                       {post.textSnippet + (post.text.length > 49 ? "..." : "")}
                     </Text>
                     <Box>
-                      <EditDeletePostButtons postId={post.id} creatorId={post.creator.id} />
+                      <EditDeletePostButtons
+                        postId={post.id}
+                        creatorId={post.creator.id}
+                      />
                     </Box>
                   </Flex>
                 </Box>
@@ -56,12 +64,15 @@ const Index = () => {
         <Flex>
           <Button
             onClick={() =>
-              setVariables({
-                limit: variables.limit,
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+              fetchMore({
+                variables: {
+                  limit: variables?.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                },
               })
             }
-            isLoading={fetching}
+            isLoading={loading}
             m="auto"
             my={8}
           >
@@ -73,4 +84,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withApollo({ ssr: true })(Index);
